@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hitam-answer-sheets"
+version = "0.1.0"
+description = "Export HITAM evaluation answer-sheet PDF links to Excel"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openpyxl>=3.1,<4",
+    "playwright>=1.50,<2",
+]
+
+[project.scripts]
+hitam = "hitam_cli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "browser: requires an installed Playwright Chromium browser",
+]
+
