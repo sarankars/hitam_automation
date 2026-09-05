@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hitam-answer-sheets"
 version = "0.1.0"
-description = "Export HITAM evaluation answer-sheet PDF links to Excel"
+description = "Prepare and submit HITAM exam evaluation workbooks"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -24,4 +24,3 @@ testpaths = ["tests"]
 markers = [
     "browser: requires an installed Playwright Chromium browser",
 ]
-

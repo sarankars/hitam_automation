@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from unittest import TestCase
 
-from hitam_cli.cli import default_output_path, read_inputs
+from hitam_cli.cli import (
+    build_parser,
+    confirm_upload,
+    default_output_path,
+    read_inputs,
+    read_upload_inputs,
+)
+from hitam_cli.portal import UploadSummary
 
 
 class CliTests(TestCase):
@@ -41,3 +49,34 @@ class CliTests(TestCase):
             "24 PC/01", "B 17", datetime(2026, 9, 5, 10, 11, 12, tzinfo=UTC)
         )
         self.assertEqual(result.name, "hitam_24-PC-01_B-17_20260905_101112.xlsx")
+
+    def test_nested_exam_commands(self):
+        parser = build_parser()
+        export = parser.parse_args(["exam", "export", "--headless"])
+        upload = parser.parse_args(["exam", "upload", "marks.xlsx"])
+        self.assertEqual((export.command, export.exam_command), ("exam", "export"))
+        self.assertTrue(export.headless)
+        self.assertEqual((upload.command, upload.exam_command), ("exam", "upload"))
+        self.assertEqual(upload.workbook.name, "marks.xlsx")
+
+    def test_removed_eval_command_is_rejected(self):
+        parser = build_parser()
+        with self.assertRaises(SystemExit):
+            parser.parse_args(["eval"])
+
+    def test_upload_prompts_only_for_user_code_and_bundle_key(self):
+        prompts = []
+        workbook = SimpleNamespace(subject_code="CS101", bundle_no="B17")
+        result = read_upload_inputs(
+            workbook,
+            lambda prompt: prompts.append(prompt) or "USER",
+            lambda prompt: prompts.append(prompt) or "KEY",
+        )
+        self.assertEqual(prompts, ["User Code: ", "Bundle Key: "])
+        self.assertEqual(result.subject_code, "CS101")
+        self.assertEqual(result.bundle_no, "B17")
+
+    def test_upload_confirmation_requires_exact_word(self):
+        summary = UploadSummary(2, 3, 6)
+        self.assertTrue(confirm_upload(summary, lambda _: "UPLOAD"))
+        self.assertFalse(confirm_upload(summary, lambda _: "yes"))
